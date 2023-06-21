@@ -12,7 +12,7 @@ pub struct UdpTransport;
 
 #[async_trait]
 impl Transport for UdpTransport {
-    async fn open(&self, bind_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
+    async fn open(&mut self, bind_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
         let socket = tokio::net::UdpSocket::bind(bind_addr)
             .await
             .with_context(|| format!("Failed to bind to {bind_addr}/UDP for gossip."))?;

@@ -20,7 +20,7 @@ pub trait DelayMillisDist: Distribution<f32> + Send + Sync + Clone + 'static {}
 
 #[async_trait]
 impl<D: DelayMillisDist> Transport for TransportWithDelay<D> {
-    async fn open(&self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
+    async fn open(&mut self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
         let rng = SmallRng::from_rng(thread_rng()).unwrap();
         let socket = self.transport.open(listen_addr).await?;
         Ok(Box::new(SocketWithDelay {
@@ -83,7 +83,7 @@ struct TransportWithMessageDrop {
 
 #[async_trait]
 impl Transport for TransportWithMessageDrop {
-    async fn open(&self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
+    async fn open(&mut self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
         let rng = SmallRng::from_rng(thread_rng()).unwrap();
         let socket = self.transport.open(listen_addr).await?;
         Ok(Box::new(SocketWithMessageDrop {

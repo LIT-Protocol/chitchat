@@ -41,7 +41,7 @@ pub struct ChannelTransport {
 
 #[async_trait]
 impl Transport for ChannelTransport {
-    async fn open(&self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
+    async fn open(&mut self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
         let mut inner_lock = self.inner.lock().unwrap();
         let (message_tx, message_rx) = tokio::sync::mpsc::channel(MAX_MESSAGE_PER_CHANNEL);
         if inner_lock.send_channels.contains_key(&listen_addr) {

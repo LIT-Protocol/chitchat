@@ -14,7 +14,7 @@ pub use utils::TransportExt;
 
 #[async_trait]
 pub trait Transport: Send + Sync + 'static {
-    async fn open(&self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>>;
+    async fn open(&mut self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>>;
 }
 
 #[async_trait]
