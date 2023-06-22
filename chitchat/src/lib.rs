@@ -57,7 +57,7 @@ impl Chitchat {
     pub fn with_chitchat_id_and_seeds(
         config: ChitchatConfig,
         seed_addrs: watch::Receiver<HashSet<SocketAddr>>,
-        initial_key_values: Vec<(String, String)>,
+        initial_key_values: Vec<(String, Vec<u8>)>,
     ) -> Self {
         let failure_detector = FailureDetector::new(config.failure_detector_config.clone());
         let previous_live_nodes = HashMap::new();

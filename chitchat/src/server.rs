@@ -122,7 +122,7 @@ async fn spawn_dns_refresh_loop(seeds: &[String]) -> watch::Receiver<HashSet<Soc
 /// This will start the server as a new Tokio background task.
 pub async fn spawn_chitchat(
     config: ChitchatConfig,
-    initial_key_values: Vec<(String, String)>,
+    initial_key_values: Vec<(String, Vec<u8>)>,
     transport: &mut dyn Transport,
 ) -> anyhow::Result<ChitchatHandle> {
     let (command_tx, command_rx) = mpsc::unbounded_channel();
