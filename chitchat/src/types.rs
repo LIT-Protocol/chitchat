@@ -49,6 +49,9 @@ impl ChitchatId {
 /// A versioned key-value pair.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct VersionedValue {
+    #[cfg(feature = "byte-value")]
+    pub value: Vec<u8>,
+    #[cfg(not(feature = "byte-value"))]
     pub value: String,
     pub version: Version,
     pub tombstone: Option<u64>,

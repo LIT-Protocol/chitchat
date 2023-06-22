@@ -171,6 +171,25 @@ impl Serializable for String {
     }
 }
 
+#[cfg(feature = "byte-value")]
+impl Serializable for Vec<u8> {
+    fn serialize(&self, buf: &mut Vec<u8>) {
+        (self.len() as u16).serialize(buf);
+        buf.extend(self)
+    }
+
+    fn deserialize(buf: &mut &[u8]) -> anyhow::Result<Self> {
+        let len: usize = u16::deserialize(buf)? as usize;
+        let val_bytes: Vec<u8> = buf[..len].try_into()?;
+        buf.consume(len);
+        Ok(val_bytes)
+    }
+
+    fn serialized_len(&self) -> usize {
+        2 + self.len()
+    }
+}
+
 impl<const N: usize> Serializable for [u8; N] {
     fn serialize(&self, buf: &mut Vec<u8>) {
         buf.extend_from_slice(&self[..]);

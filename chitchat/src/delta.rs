@@ -242,6 +242,9 @@ impl Serializable for NodeDelta {
         let num_key_values = u16::deserialize(buf)?;
         for _ in 0..num_key_values {
             let key = String::deserialize(buf)?;
+            #[cfg(feature = "byte-value")]
+            let value = Vec::<u8>::deserialize(buf)?;
+            #[cfg(not(feature = "byte-value"))]
             let value = String::deserialize(buf)?;
             let version = u64::deserialize(buf)?;
             let tombstone = <Option<u64>>::deserialize(buf)?;

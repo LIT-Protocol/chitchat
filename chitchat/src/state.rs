@@ -64,6 +64,13 @@ impl NodeState {
             .count()
     }
 
+    #[cfg(feature = "byte-value")]
+    pub fn get(&self, key: &str) -> Option<&Vec<u8>> {
+        self.get_versioned(key)
+            .map(|versioned_value| versioned_value.value.as_ref())
+    }
+
+    #[cfg(not(feature = "byte-value"))]
     pub fn get(&self, key: &str) -> Option<&str> {
         self.get_versioned(key)
             .map(|versioned_value| versioned_value.value.as_str())
@@ -78,6 +85,18 @@ impl NodeState {
     /// Setting a new value automatically increments the
     /// version of the entire NodeState regardless of whether the
     /// value is really changed or not.
+    #[cfg(feature = "byte-value")]
+    pub fn set<K: Into<String>, V: Into<Vec<u8>>>(&mut self, key: K, value: V) {
+        let new_version = self.max_version + 1;
+        self.set_with_version(key.into(), value.into(), new_version);
+    }
+
+    /// Sets a new value for a given key.
+    ///
+    /// Setting a new value automatically increments the
+    /// version of the entire NodeState regardless of whether the
+    /// value is really changed or not.
+    #[cfg(not(feature = "byte-value"))]
     pub fn set<K: Into<String>, V: Into<String>>(&mut self, key: K, value: V) {
         let new_version = self.max_version + 1;
         self.set_with_version(key.into(), value.into(), new_version);
@@ -92,7 +111,14 @@ impl NodeState {
         self.max_version += 1;
         versioned_value.tombstone = Some(self.heartbeat.0);
         versioned_value.version = self.max_version;
-        versioned_value.value = "".to_string();
+        #[cfg(feature = "byte-value")]
+        {
+            versioned_value.value.clear();
+        }
+        #[cfg(not(feature = "byte-value"))]
+        {
+            versioned_value.value = "".to_string();
+        }
     }
 
     pub(crate) fn update_heartbeat(&mut self) {
@@ -143,6 +169,21 @@ impl NodeState {
         })
     }
 
+    #[cfg(feature = "byte-value")]
+    fn set_with_version(&mut self, key: String, value: Vec<u8>, version: Version) {
+        assert!(version > self.max_version);
+        self.max_version = version;
+        self.key_values.insert(
+            key,
+            VersionedValue {
+                version,
+                value,
+                tombstone: None,
+            },
+        );
+    }
+
+    #[cfg(not(feature = "byte-value"))]
     fn set_with_version(&mut self, key: String, value: String, version: Version) {
         assert!(version > self.max_version);
         self.max_version = version;
