@@ -94,7 +94,7 @@ async fn main() -> anyhow::Result<()> {
         failure_detector_config: FailureDetectorConfig::default(),
         marked_for_deletion_grace_period: 10_000,
     };
-    let chitchat_handler = spawn_chitchat(config, Vec::new(), &UdpTransport).await?;
+    let chitchat_handler = spawn_chitchat(config, Vec::new(), &mut UdpTransport).await?;
     let chitchat = chitchat_handler.chitchat();
     let api = Api { chitchat };
     let api_service = OpenApiService::new(api, "Hello World", "1.0")

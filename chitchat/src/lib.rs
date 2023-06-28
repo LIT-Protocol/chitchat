@@ -28,7 +28,7 @@ pub use self::state::{ClusterStateSnapshot, NodeState};
 use crate::digest::Digest;
 use crate::message::syn_ack_serialized_len;
 pub use crate::message::ChitchatMessage;
-pub use crate::server::{spawn_chitchat, ChitchatHandle};
+pub use crate::server::{spawn_chitchat, ChitchatHandle, get_gossip_count, set_gossip_count};
 use crate::state::ClusterState;
 pub use crate::types::{ChitchatId, Heartbeat, MaxVersion, Version, VersionedValue};
 
@@ -57,7 +57,10 @@ impl Chitchat {
     pub fn with_chitchat_id_and_seeds(
         config: ChitchatConfig,
         seed_addrs: watch::Receiver<HashSet<SocketAddr>>,
+        #[cfg(feature = "byte-value")]
         initial_key_values: Vec<(String, Vec<u8>)>,
+        #[cfg(not(feature = "byte-value"))]
+        initial_key_values: Vec<(String, String)>,
     ) -> Self {
         let failure_detector = FailureDetector::new(config.failure_detector_config.clone());
         let previous_live_nodes = HashMap::new();

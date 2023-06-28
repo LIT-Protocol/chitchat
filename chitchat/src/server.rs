@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use rand::prelude::*;
@@ -16,7 +17,15 @@ use crate::transport::{Socket, Transport};
 use crate::{Chitchat, ChitchatConfig, ChitchatId};
 
 /// Number of nodes picked for random gossip.
-const GOSSIP_COUNT: usize = 3;
+static GOSSIP_COUNT: AtomicUsize = AtomicUsize::new(3);
+
+pub fn set_gossip_count(count: usize) {
+    GOSSIP_COUNT.store(count, Ordering::SeqCst);
+}
+
+pub fn get_gossip_count() -> usize {
+    GOSSIP_COUNT.load(Ordering::Acquire)
+}
 
 /// UDP Chitchat server handler.
 ///
@@ -122,7 +131,10 @@ async fn spawn_dns_refresh_loop(seeds: &[String]) -> watch::Receiver<HashSet<Soc
 /// This will start the server as a new Tokio background task.
 pub async fn spawn_chitchat(
     config: ChitchatConfig,
+    #[cfg(feature = "byte-value")]
     initial_key_values: Vec<(String, Vec<u8>)>,
+    #[cfg(not(feature = "byte-value"))]
+    initial_key_values: Vec<(String, String)>,
     transport: &mut dyn Transport,
 ) -> anyhow::Result<ChitchatHandle> {
     let (command_tx, command_rx) = mpsc::unbounded_channel();
@@ -337,7 +349,7 @@ where
     }
     .iter()
     .cloned()
-    .choose_multiple(rng, GOSSIP_COUNT);
+    .choose_multiple(rng, get_gossip_count());
 
     let mut has_gossiped_with_a_seed_node = false;
     for chitchat_id in &nodes {
